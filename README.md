@@ -1,4 +1,4 @@
-# Space Invaders
+# 🟢 Space Invaders
 
 ![Java](https://img.shields.io/badge/Java-17%2B-orange?style=flat-square)
 ![Swing](https://img.shields.io/badge/UI-Swing-blue?style=flat-square)
