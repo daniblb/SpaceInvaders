@@ -1,31 +1,63 @@
-import java.awt.*;
+import java.awt.Image;
+import javax.swing.ImageIcon;
 
-public class SpaceShip extends SpaceObj
-{
-    int ammo;
-    int lives;
+public class SpaceShip extends SpaceObj {
 
-    public SpaceShip(int spawnX, int spawnY)
-    {
+    private static final int MIN_X = 15;
+    private static final int MAX_X = 1810;
+
+    private static final int DEFAULT_AMMO = 50;
+    private static final int DEFAULT_LIVES = 5;
+
+    private int ammo;
+    private int lives;
+
+    public SpaceShip(int spawnX, int spawnY) {
         super(spawnX, spawnY);
 
-        ammo = 50;
-        lives = 5;
-        speed = 10;
-        maxSpeed = 10.0f;
-        acceleration = 0.8f;
-        deceleration = 1.2f; 
-        width = 50;
-        height = 50;
+        this.ammo = DEFAULT_AMMO;
+        this.lives = DEFAULT_LIVES;
 
-        image = Toolkit.getDefaultToolkit().getImage(getClass().getResource("pictures/player.png"));
+        this.speed = 10;
+        this.maxSpeed = 10.0f;
+        this.acceleration = 0.8f;
+        this.deceleration = 1.2f;
+
+        this.width = 50;
+        this.height = 50;
+
+        this.image = loadImage("/pictures/player.png");
     }
-    public void move()
-    {
+
+    private Image loadImage(String path) {
+        return new ImageIcon(getClass().getResource(path)).getImage();
+    }
+
+    @Override
+    public void move() {
         super.move();
-        if (x < 15)
-            x = 15;
-        if (x > 1810)
-            x = 1810;
+        clampPosition();
+    }
+
+    private void clampPosition() {
+        if (x < MIN_X) x = MIN_X;
+        if (x > MAX_X) x = MAX_X;
+    }
+
+    // Getter / Setter
+    public int getAmmo() {
+        return ammo;
+    }
+
+    public void setAmmo(int ammo) {
+        this.ammo = Math.max(0, ammo); // keine negativen Werte
+    }
+
+    public int getLives() {
+        return lives;
+    }
+
+    public void setLives(int lives) {
+        this.lives = Math.max(0, lives);
     }
 }
