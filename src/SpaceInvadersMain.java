@@ -131,10 +131,24 @@ public class SpaceInvadersMain extends JPanel implements Runnable {
     }
 
     private void drawScoreboard(Graphics2D g) {
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        // Score, Ammo, Time
+        int elapsed = (int) ((System.currentTimeMillis() - gameStartTime) / 1000);
+        int minutes = elapsed / 60;
+        int seconds = elapsed % 60;
+
         g.setColor(Color.WHITE);
-        g.drawString("Score: " + score, 20, 20);
-        g.drawString("Ammo: " + player.getAmmo(), 20, 40);
-        g.drawString("Lives: " + player.getLives(), 20, 60);
+        g.setFont(new Font("Arial", Font.BOLD, 20));
+        g.drawString("Score: " + score, 20, 30);
+        g.drawString("Ammo: " + player.getAmmo(), 20, 60);
+        g.drawString(String.format("Time: %02d:%02d", minutes, seconds), 20, 90);
+
+        // Herz-Leben mit Puls-Effekt
+        for (int i = 0; i < player.getLives(); i++) {
+            int heartSize = (int) (30 * heartbeatScale);
+            g.drawImage(heartImage, 20 + i * (heartSize + 5), 120, heartSize, heartSize, this);
+        }
     }
 
     private void updateDifficulty() {
@@ -148,9 +162,12 @@ public class SpaceInvadersMain extends JPanel implements Runnable {
 
     @Override
     public void run() {
-        while (true) {
+    while (true) {
 
-            repaint();
+            // 1️⃣ Puls-Effekt berechnen
+            heartbeatScale = (float) (Math.sin(System.currentTimeMillis() / 250.0) * 0.08 + 1.0);
+
+            // 2️⃣ Game-Logik
             player.move();
 
             // Schießen
@@ -160,6 +177,7 @@ public class SpaceInvadersMain extends JPanel implements Runnable {
                 player.setAmmo(player.getAmmo() - 1);
             }
 
+            // Aliens bewegen
             synchronized (aliens) {
                 for (Alien a : aliens) {
                     a.move();
@@ -169,7 +187,7 @@ public class SpaceInvadersMain extends JPanel implements Runnable {
                 }
             }
 
-            // Alien Bullets
+                // Alien Bullets
             Iterator<AlienBullet> abIter = alienBullets.iterator();
             while (abIter.hasNext()) {
                 AlienBullet b = abIter.next();
