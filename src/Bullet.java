@@ -1,22 +1,22 @@
 import java.awt.*;
+import java.net.URL;
 
-public class Bullet extends SpaceObj
-{
-    public Bullet(int spawnX, int spawnY)
-    {
-        super(spawnX, spawnY);
-        speed = 15;
+public class Bullet extends SpaceObj {
+
+    public Bullet(int spawnX, int spawnY) {
+        super(spawnX, spawnY, 10, 20);
         maxSpeed = 15.0f;
+        direction = UP;
         velocityY = -maxSpeed;
-        width = 10;
-        height = 20;
-        direction = SpaceObj.up;
 
-        image = Toolkit.getDefaultToolkit().getImage(getClass().getResource("pictures/bullet.png"));
+        URL imageUrl = getClass().getResource("pictures/bullet.png");
+        if (imageUrl != null) {
+            image = Toolkit.getDefaultToolkit().getImage(imageUrl);
+        }
     }
 
-    public void move()
-    {
-        super.move();
+    @Override
+    public void move(float deltaTime) {
+        super.move(deltaTime);
     }
 }
