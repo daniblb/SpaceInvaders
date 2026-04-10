@@ -88,20 +88,19 @@ public class SpaceInvadersMain extends JPanel implements Runnable {
     }
 
     private void updatePlayerDirection() {
-        if (rightPressed && !leftPressed) player.direction = SpaceObj.right;
-        else if (leftPressed && !rightPressed) player.direction = SpaceObj.left;
+        if (rightPressed && !leftPressed) player.direction = RIGHT;
+        else if (leftPressed && !rightPressed) player.direction = LEFT;
         else player.direction = 0;
     }
 
     private void spawnAlien() {
-        Alien a = new Alien(10, 10);
+        Alien a = new Alien(10, 100);  // y=100 statt 10
         a.maxSpeed = 4.0f + (difficultyLevel - 1) * 1.5f;
-        a.velocityX = a.direction == SpaceObj.right ? a.maxSpeed : -a.maxSpeed;
+        a.direction = RIGHT;  // Richtung statt velocityX
 
         synchronized (aliens) {
             aliens.add(a);
         }
-
         alienTimer.setDelay((int) alienSpawnInterval);
     }
 
@@ -162,72 +161,76 @@ public class SpaceInvadersMain extends JPanel implements Runnable {
 
     @Override
     public void run() {
-    while (true) {
+        lastUpdateTime = System.nanoTime();
+        
+        while (true) {
+            long currentTime = System.nanoTime();
+            float deltaTime = (currentTime - lastUpdateTime) / 1_000_000_000.0f; // Sekunden
+            lastUpdateTime = currentTime;
 
-            // 1️⃣ Puls-Effekt berechnen
+            // 1️⃣ Puls-Effekt
             heartbeatScale = (float) (Math.sin(System.currentTimeMillis() / 250.0) * 0.08 + 1.0);
 
-            // 2️⃣ Game-Logik
-            player.move();
+            // 2️⃣ Player Bewegung + Richtung
+            updatePlayerDirection();
+            player.move(deltaTime);
 
-            // Schießen
+            // 3️⃣ Schießen
             if (upPressed && System.currentTimeMillis() - lastShotTime > SHOT_COOLDOWN && player.getAmmo() > 0) {
-                bullets.add(new Bullet(player.x + player.width / 2 - 5, player.y - 20));
+                Rectangle pBounds = player.getBounds();
+                bullets.add(new Bullet(pBounds.x + pBounds.width / 2 - 5, pBounds.y - 20));
                 lastShotTime = System.currentTimeMillis();
                 player.setAmmo(player.getAmmo() - 1);
             }
 
-            // Aliens bewegen
+            // 4️⃣ Aliens
             synchronized (aliens) {
                 for (Alien a : aliens) {
-                    a.move();
+                    a.move(deltaTime);
                     if (a.canShoot()) {
-                        alienBullets.add(new AlienBullet(a.x + a.width / 2, a.y));
+                        Rectangle aBounds = a.getBounds();
+                        alienBullets.add(new AlienBullet(aBounds.x + aBounds.width / 2, aBounds.y + aBounds.height));
+                        a.markShot();
                     }
                 }
             }
 
-                // Alien Bullets
+            // 5️⃣ AlienBullets
             Iterator<AlienBullet> abIter = alienBullets.iterator();
             while (abIter.hasNext()) {
                 AlienBullet b = abIter.next();
-                b.move();
+                b.move(deltaTime);
 
-                if (b.intersects(player)) {
+                if (b.getBounds().intersects(player.getBounds())) {
                     abIter.remove();
                     player.setLives(player.getLives() - 1);
-
                     flashPlayer = true;
                     lastHitTime = System.currentTimeMillis();
 
                     if (player.getLives() <= 0) {
                         System.exit(0);
                     }
-                } else if (b.y > getHeight()) {
+                } else if (b.getBounds().y > getHeight()) {
                     abIter.remove();
                 }
             }
 
-            // Player Bullets
+            // 6️⃣ PlayerBullets (identisch, aber mit getBounds())
             Iterator<Bullet> bIter = bullets.iterator();
             while (bIter.hasNext()) {
                 Bullet bullet = bIter.next();
-                bullet.move();
+                bullet.move(deltaTime);
 
                 boolean removed = false;
-
                 synchronized (aliens) {
                     Iterator<Alien> aIter = aliens.iterator();
                     while (aIter.hasNext()) {
                         Alien alien = aIter.next();
-
-                        if (bullet.intersects(alien)) {
+                        if (bullet.getBounds().intersects(alien.getBounds())) {
                             aIter.remove();
                             bIter.remove();
-
                             score += 100;
                             player.setAmmo(player.getAmmo() + 2);
-
                             updateDifficulty();
                             removed = true;
                             break;
@@ -235,11 +238,12 @@ public class SpaceInvadersMain extends JPanel implements Runnable {
                     }
                 }
 
-                if (!removed && bullet.y < 0) {
+                if (!removed && bullet.getBounds().y < 0) {
                     bIter.remove();
                 }
             }
 
+            repaint();  // Neu: explizit repaint aufrufen
             try {
                 Thread.sleep(16); // ~60 FPS
             } catch (InterruptedException ignored) {}
