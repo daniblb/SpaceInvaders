@@ -1,70 +1,82 @@
 import java.awt.*;
 
-public abstract class SpaceObj extends Rectangle
-{
-    Image image;
-    int speed;
-    int direction;
-    float velocityX = 0;
-    float velocityY = 0;
-    float maxSpeed;
-    float acceleration = 0.5f;
-    float deceleration = 0.3f;
+public abstract class SpaceObj {
+    protected final Rectangle bounds = new Rectangle();
+    protected Image image;
+    protected int speed;
+    protected int direction;
+    protected float velocityX = 0;
+    protected float velocityY = 0;
+    protected float maxSpeed;
+    protected float acceleration = 0.5f;
+    protected float deceleration = 0.3f;
 
-    final static int up = 1;
-    final static int right = 2;
-    final static int down = 3;
-    final static int left = 4;
+    protected final static int UP = 1;
+    protected final static int RIGHT = 2;
+    protected final static int DOWN = 3;
+    protected final static int LEFT = 4;
 
-    public SpaceObj(int spawnX, int spawnY)
-    {
-        x = spawnX;
-        y = spawnY;
-        // Standardwerte für width und height, können in Unterklassen überschrieben werden
-        width = 50;
-        height = 50;
+    public SpaceObj(int spawnX, int spawnY, int width, int height) {
+        bounds.setBounds(spawnX, spawnY, width, height);
     }
-    public void draw(Graphics g, Component c)
-    {
-        g.drawImage(image, x, y, c);
+
+    public void draw(Graphics g, Component c) {
+        if (image != null) {
+            g.drawImage(image, bounds.x, bounds.y, bounds.width, bounds.height, c);
+        } else {
+            g.setColor(Color.WHITE);
+            g.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
+        }
     }
-    public void move ()
-    {
-        switch (direction)
-        {
-            case up:
-                velocityY = approach(-maxSpeed, velocityY, acceleration);
-                velocityX = approach(0, velocityX, deceleration);
+
+    public void move(float deltaTime) {
+        switch (direction) {
+            case UP:
+                velocityY = approach(-maxSpeed, velocityY, acceleration * deltaTime);
+                velocityX = approach(0, velocityX, deceleration * deltaTime);
                 break;
-            case right:
-                velocityX = approach(maxSpeed, velocityX, acceleration);
-                velocityY = approach(0, velocityY, deceleration);
+            case RIGHT:
+                velocityX = approach(maxSpeed, velocityX, acceleration * deltaTime);
+                velocityY = approach(0, velocityY, deceleration * deltaTime);
                 break;
-            case down:
-                velocityY = approach(maxSpeed, velocityY, acceleration);
-                velocityX = approach(0, velocityX, deceleration);
+            case DOWN:
+                velocityY = approach(maxSpeed, velocityY, acceleration * deltaTime);
+                velocityX = approach(0, velocityX, deceleration * deltaTime);
                 break;
-            case left:
-                velocityX = approach(-maxSpeed, velocityX, acceleration);
-                velocityY = approach(0, velocityY, deceleration);
+            case LEFT:
+                velocityX = approach(-maxSpeed, velocityX, acceleration * deltaTime);
+                velocityY = approach(0, velocityY, deceleration * deltaTime);
                 break;
             default:
-                velocityX = approach(0, velocityX, deceleration);
-                velocityY = approach(0, velocityY, deceleration);
+                velocityX = approach(0, velocityX, deceleration * deltaTime);
+                velocityY = approach(0, velocityY, deceleration * deltaTime);
                 break;
         }
 
-        x += Math.round(velocityX);
-        y += Math.round(velocityY);
+        bounds.x += Math.round(velocityX * deltaTime);
+        bounds.y += Math.round(velocityY * deltaTime);
     }
+
     protected float approach(float target, float current, float delta) {
         if (current < target) {
             current += delta;
-            if (current > target) return target;
+            return Math.min(current, target);
         } else if (current > target) {
             current -= delta;
-            if (current < target) return target;
+            return Math.max(current, target);
         }
         return current;
     }
+
+    // Getter methods for bounds access
+    public Rectangle getBounds() { return bounds; }
+    public int getX() { return bounds.x; }
+    public int getY() { return bounds.y; }
+    public int getWidth() { return bounds.width; }
+    public int getHeight() { return bounds.height; }
+
+    // Setter for image and other properties
+    public void setImage(Image img) { this.image = img; }
+    public void setMaxSpeed(float speed) { this.maxSpeed = speed; }
+    public void setDirection(int dir) { this.direction = dir; }
 }
