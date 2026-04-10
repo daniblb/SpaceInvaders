@@ -1,19 +1,22 @@
 import java.awt.*;
+import java.net.URL;
 
 public class AlienBullet extends SpaceObj {
-    private static final Image bulletImage = Toolkit.getDefaultToolkit()
-            .getImage(AlienBullet.class.getResource("pictures/bulletAlien.png"));
 
     public AlienBullet(int spawnX, int spawnY) {
-        super(spawnX, spawnY);
-        velocityY = 6.0f;
-        width = 8;
-        height = 15;
-        image = bulletImage;
+        super(spawnX, spawnY, 8, 15);
+        maxSpeed = 6.0f;
+        velocityY = maxSpeed;
+        direction = DOWN;
+
+        URL imageUrl = getClass().getResource("pictures/bulletAlien.png");
+        if (imageUrl != null) {
+            image = Toolkit.getDefaultToolkit().getImage(imageUrl);
+        }
     }
 
     @Override
-    public void move() {
-        y += velocityY;
+    public void move(float deltaTime) {
+        super.move(deltaTime);
     }
 }
