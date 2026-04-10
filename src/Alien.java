@@ -8,28 +8,31 @@ public class Alien extends SpaceObj {
     private static final Random random = new Random();
 
     public Alien(int spawnX, int spawnY) {
-        super(spawnX, spawnY);
-        speed = 4;
+        super(spawnX, spawnY, 50, 50);  // Standardgröße für Aliens
         maxSpeed = 4.0f;
         velocityX = maxSpeed;
-
-        direction = SpaceObj.right;
+        direction = RIGHT;
 
         canShoot = random.nextInt(100) < 10;
 
-        image = Toolkit.getDefaultToolkit().getImage(getClass().getResource("pictures/alien.png"));
+        var imageUrl = getClass().getResource("pictures/alien.png");
+        if (imageUrl != null) {
+            image = Toolkit.getDefaultToolkit().getImage(imageUrl);
+        }
     }
 
-    public void move() {
-        super.move();
-        if (x > 1800) {
-            direction = SpaceObj.left;
-            y += 100;
+    @Override
+    public void move(float deltaTime) {
+        super.move(deltaTime);
+        
+        if (bounds.x > 1800) {
+            direction = LEFT;
+            bounds.y += 100;
             velocityX = -maxSpeed;
         }
-        if (x < 10) {
-            direction = SpaceObj.right;
-            y += 100;
+        if (bounds.x < 10) {
+            direction = RIGHT;
+            bounds.y += 100;
             velocityX = maxSpeed;
         }
     }
