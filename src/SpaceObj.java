@@ -1,23 +1,25 @@
 import java.awt.*;
-import java.awt.image.ImageObserver;
 
 public abstract class SpaceObj {
+
     protected final Rectangle bounds;
     protected Image image;
+
     protected float velocityX;
     protected float velocityY;
+
     protected float maxSpeed;
     protected float acceleration = 0.5f;
     protected float deceleration = 0.3f;
-    protected int direction;
 
-    protected static final int UP = 1;
-    protected static final int RIGHT = 2;
-    protected static final int DOWN = 3;
-    protected static final int LEFT = 4;
+    protected Direction direction = Direction.NONE;
 
-    public SpaceObj(int spawnX, int spawnY, int width, int height) {
-        this.bounds = new Rectangle(spawnX, spawnY, width, height);
+    public enum Direction {
+        UP, RIGHT, DOWN, LEFT, NONE
+    }
+
+    public SpaceObj(int x, int y, int width, int height) {
+        this.bounds = new Rectangle(x, y, width, height);
     }
 
     public void draw(Graphics g, Component c) {
@@ -32,10 +34,6 @@ public abstract class SpaceObj {
                 velocityY = approach(-maxSpeed, velocityY, acceleration * deltaTime);
                 velocityX = approach(0, velocityX, deceleration * deltaTime);
             }
-            case RIGHT -> {
-                velocityX = approach(maxSpeed, velocityX, acceleration * deltaTime);
-                velocityY = approach(0, velocityY, deceleration * deltaTime);
-            }
             case DOWN -> {
                 velocityY = approach(maxSpeed, velocityY, acceleration * deltaTime);
                 velocityX = approach(0, velocityX, deceleration * deltaTime);
@@ -44,7 +42,11 @@ public abstract class SpaceObj {
                 velocityX = approach(-maxSpeed, velocityX, acceleration * deltaTime);
                 velocityY = approach(0, velocityY, deceleration * deltaTime);
             }
-            default -> {
+            case RIGHT -> {
+                velocityX = approach(maxSpeed, velocityX, acceleration * deltaTime);
+                velocityY = approach(0, velocityY, deceleration * deltaTime);
+            }
+            case NONE -> {
                 velocityX = approach(0, velocityX, deceleration * deltaTime);
                 velocityY = approach(0, velocityY, deceleration * deltaTime);
             }
@@ -62,5 +64,9 @@ public abstract class SpaceObj {
 
     public Rectangle getBounds() {
         return bounds;
+    }
+
+    public void setDirection(Direction direction) {
+        this.direction = direction;
     }
 }
